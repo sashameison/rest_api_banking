@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceTest {
+public class TransactionServiceTest {
 
   public static final String ACCOUNT_NUMBER = "1234 5678 1234 5678";
   public static final String RECEIVER_ACCOUNT_NUMBER = "9876 5432 1098 7654";
@@ -91,7 +91,7 @@ class TransactionServiceTest {
   }
 
   @Test
-  void shouldThrowException_WhenInsufficientBalance() {
+  void shouldThrowExceptionWhenInsufficientBalance() {
     DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER);
     when(accountService.withdrawAccountBalance(withdrawDto)).thenThrow(new ResponseStatusException(BAD_REQUEST));
 

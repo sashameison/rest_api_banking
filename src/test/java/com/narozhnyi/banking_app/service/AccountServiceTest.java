@@ -2,6 +2,8 @@ package com.narozhnyi.banking_app.service;
 
 import static java.time.Instant.now;
 
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.RECEIVER_ACCOUNT_NUMBER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,12 +48,12 @@ class AccountServiceTest {
 
   @Test
   void shouldCreateAccountSuccessfully() {
-    AccountCreateEditDto createEditDto = new AccountCreateEditDto("1234 5678 1234 5678", BigDecimal.valueOf(1000));
+    AccountCreateEditDto createEditDto = new AccountCreateEditDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000));
     Account account = new Account();
-    account.setAccountNumber("1234 5678 1234 5678");
+    account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(1000));
 
-    AccountReadDto accountReadDto = new AccountReadDto("1234 5678 1234 5678", BigDecimal.valueOf(1000), now(), now());
+    AccountReadDto accountReadDto = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
 
     when(accountMapper.toAccount(createEditDto)).thenReturn(account);
     when(accountRepository.save(account)).thenReturn(account);
@@ -71,12 +73,12 @@ class AccountServiceTest {
 
   @Test
   void shouldReturnAccountWhenAccountExists() {
-    String accountNumber = "1234 5678 1234 5678";
+    String accountNumber = ACCOUNT_NUMBER;
     Account account = new Account();
     account.setAccountNumber(accountNumber);
     account.setBalance(BigDecimal.valueOf(1000));
 
-    AccountReadDto accountReadDto = new AccountReadDto("1234 5678 1234 5678", BigDecimal.valueOf(1000), now(), now());
+    AccountReadDto accountReadDto = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.of(account));
     when(accountMapper.toReadDto(account)).thenReturn(accountReadDto);
@@ -90,7 +92,7 @@ class AccountServiceTest {
 
   @Test
   void shouldThrowExceptionWhenAccountNotFound() {
-    String accountNumber = "1234 5678 1234 5678";
+    String accountNumber = ACCOUNT_NUMBER;
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.empty());
 
@@ -101,16 +103,16 @@ class AccountServiceTest {
   void shouldReturnPageOfAccounts() {
     PageRequest pageable = PageRequest.of(0, 10);
     Account account1 = new Account();
-    account1.setAccountNumber("1234 5678 1234 5678");
+    account1.setAccountNumber(ACCOUNT_NUMBER);
     account1.setBalance(BigDecimal.valueOf(1000));
 
     Account account2 = new Account();
-    account2.setAccountNumber("9876 5432 1098 7654");
+    account2.setAccountNumber(RECEIVER_ACCOUNT_NUMBER);
     account2.setBalance(BigDecimal.valueOf(2000));
 
     Page<Account> accountPage = new PageImpl<>(List.of(account1, account2));
-    AccountReadDto accountReadDto1 = new AccountReadDto("1234 5678 1234 5678", BigDecimal.valueOf(1000), now(), now());
-    AccountReadDto accountReadDto2 = new AccountReadDto("9876 5432 1098 7654", BigDecimal.valueOf(2000), now(), now());
+    AccountReadDto accountReadDto1 = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
+    AccountReadDto accountReadDto2 = new AccountReadDto(RECEIVER_ACCOUNT_NUMBER, BigDecimal.valueOf(2000), now(), now());
 
     when(accountRepository.findAllBy(pageable)).thenReturn(accountPage);
     when(accountMapper.toReadDto(account1)).thenReturn(accountReadDto1);
@@ -138,12 +140,11 @@ class AccountServiceTest {
 
   @Test
   void shouldThrowExceptionNotFoundWhenGetByNotExistingAccountNumber() {
-    var nonExistingAccountNumber = "123456789";
-    when(accountRepository.findAccountByAccountNumber(nonExistingAccountNumber))
+    when(accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER))
         .thenReturn(Optional.empty());
 
     var exception = assertThrows(ResponseStatusException.class, () -> {
-      accountService.getByAccountNumber(nonExistingAccountNumber);
+      accountService.getByAccountNumber(ACCOUNT_NUMBER);
     });
 
     assertThat(exception)
@@ -152,32 +153,26 @@ class AccountServiceTest {
 
   @Test
   void shouldReturnAccountByAccountNumber() {
-    // Given
-    var accountNumber = "123456789";
-
     var accountCreateEditDto = new AccountCreateEditDto();
-    accountCreateEditDto.setAccountNumber(accountNumber);
+    accountCreateEditDto.setAccountNumber(ACCOUNT_NUMBER);
 
     var expectedAccountReadDto = new AccountReadDto();
-    expectedAccountReadDto.setAccountNumber(accountNumber);
+    expectedAccountReadDto.setAccountNumber(ACCOUNT_NUMBER);
 
     var account = new Account();
-    account.setAccountNumber(accountNumber);
+    account.setAccountNumber(ACCOUNT_NUMBER);
 
-    when(accountRepository.findAccountByAccountNumber(accountNumber))
+    when(accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER))
         .thenReturn(Optional.of(account));
     when(accountMapper.toReadDto(account)).thenReturn(expectedAccountReadDto);
 
-    // When
-    var actualAccountReadDto = accountService.getByAccountNumber(accountNumber);
+    var actualAccountReadDto = accountService.getByAccountNumber(ACCOUNT_NUMBER);
 
-    // Then
     assertEquals(expectedAccountReadDto, actualAccountReadDto);
   }
 
   @Test
   void depositAccountBalance_successful() {
-    // Given
     DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
@@ -186,10 +181,8 @@ class AccountServiceTest {
     when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.of(account));
     when(accountRepository.saveAndFlush(any(Account.class))).thenReturn(account);
 
-    // When
     Account updatedAccount = accountService.depositAccountBalance(depositDto);
 
-    // Then
     assertNotNull(updatedAccount);
     assertEquals(BigDecimal.valueOf(300), updatedAccount.getBalance());
     verify(accountRepository).saveAndFlush(account);
@@ -197,12 +190,10 @@ class AccountServiceTest {
 
   @Test
   void depositAccountBalance_accountNotFound() {
-    // Given
     DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
 
     when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    // When / Then
     ResponseStatusException exception = assertThrows(ResponseStatusException.class,
         () -> accountService.depositAccountBalance(depositDto));
 
@@ -212,19 +203,16 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_successful() {
-    // Given
     DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
     Account account = new Account();
-    account.setAccountNumber("1234 5678 1234 5678");
+    account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(200));
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.of(account));
     when(accountRepository.saveAndFlush(any(Account.class))).thenReturn(account);
 
-    // When
     Account updatedAccount = accountService.withdrawAccountBalance(withdrawDto);
 
-    // Then
     assertNotNull(updatedAccount);
     assertEquals(BigDecimal.valueOf(100), updatedAccount.getBalance());
     verify(accountRepository).saveAndFlush(account);
@@ -232,7 +220,6 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_insufficientBalance() {
-    // Given
     DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(300), "1234 5678 1234 5678");
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
@@ -240,7 +227,6 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.of(account));
 
-    // When / Then
     ResponseStatusException exception = assertThrows(ResponseStatusException.class,
         () -> accountService.withdrawAccountBalance(withdrawDto));
 
@@ -250,12 +236,10 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_accountNotFound() {
-    // Given
-    var withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
+    var withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER);
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    // When / Then
     var exception = assertThrows(ResponseStatusException.class,
         () -> accountService.withdrawAccountBalance(withdrawDto));
 

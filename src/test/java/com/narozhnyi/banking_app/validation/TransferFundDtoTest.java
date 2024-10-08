@@ -1,21 +1,26 @@
 package com.narozhnyi.banking_app.validation;
 
-import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import jakarta.validation.ConstraintViolation;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.RECEIVER_ACCOUNT_NUMBER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TransferFundDtoTest {
 
+  public static final String INVALID_ACCOUNT = "invalid_account";
+  public static final String INVALID_SENDER = "invalid_sender";
+  public static final String INVALID_RECEIVER = "invalid_receiver";
   private Validator validator;
 
   @BeforeEach
@@ -26,81 +31,69 @@ class TransferFundDtoTest {
 
   @Test
   void whenValidTransferFundDto_thenNoViolations() {
-    // Given a valid TransferFundDto
     TransferFundDto transferFundDto = new TransferFundDto(
         BigDecimal.valueOf(100),
-        "1234 5678 1234 5678",
-        "8765 4321 8765 4321"
+        ACCOUNT_NUMBER,
+        RECEIVER_ACCOUNT_NUMBER
     );
 
-    // When validating the DTO
     Set<ConstraintViolation<TransferFundDto>> violations = validator.validate(transferFundDto);
 
-    // Then no validation violations should occur
     assertTrue(violations.isEmpty());
   }
 
   @Test
-  void whenNegativeTransferAmount_thenViolations() {
-    // Given a TransferFundDto with a negative transfer amount
+  void shouldNotTransferAmountWhenViolations() {
     TransferFundDto transferFundDto = new TransferFundDto(
         BigDecimal.valueOf(-100),
-        "1234 5678 1234 5678",
-        "8765 4321 8765 4321"
+        ACCOUNT_NUMBER,
+        RECEIVER_ACCOUNT_NUMBER
     );
 
-    // When validating the DTO
     Set<ConstraintViolation<TransferFundDto>> violations = validator.validate(transferFundDto);
 
-    // Then a violation should occur due to the negative transfer amount
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
     assertEquals("must be greater than 0", violation.getMessage());
   }
 
   @Test
-  void whenInvalidSenderAccountNumber_thenViolations() {
-    // Given a TransferFundDto with an invalid sender account number
+  void whenInvalidSenderAccountNumberWhenViolations() {
     TransferFundDto transferFundDto = new TransferFundDto(
         BigDecimal.valueOf(100),
-        "invalid_account",
-        "8765 4321 8765 4321"
+        INVALID_ACCOUNT,
+        RECEIVER_ACCOUNT_NUMBER
     );
 
-    // When validating the DTO
     Set<ConstraintViolation<TransferFundDto>> violations = validator.validate(transferFundDto);
 
-    // Then a violation should occur due to the invalid sender account number
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
     assertEquals("must match \"^\\d{4} \\d{4} \\d{4} \\d{4}$\"", violation.getMessage());
   }
 
   @Test
-  void whenInvalidReceiverAccountNumber_thenViolations() {
-    // Given a TransferFundDto with an invalid receiver account number
+  void whenInvalidReceiverAccountNumberWhenViolations() {
     TransferFundDto transferFundDto = new TransferFundDto(
         BigDecimal.valueOf(100),
-        "1234 5678 1234 5678",
-        "invalid_account"
+        ACCOUNT_NUMBER,
+        INVALID_ACCOUNT
     );
 
-    // When validating the DTO
     Set<ConstraintViolation<TransferFundDto>> violations = validator.validate(transferFundDto);
 
-    // Then a violation should occur due to the invalid receiver account number
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
     assertEquals("must match \"^\\d{4} \\d{4} \\d{4} \\d{4}$\"", violation.getMessage());
   }
 
   @Test
-  void whenAllFieldsInvalid_thenMultipleViolations() {
+  void whenAllFieldsInvalidWhenMultipleViolations() {
     // Given a TransferFundDto with invalid transfer amount and account numbers
     TransferFundDto transferFundDto = new TransferFundDto(
         BigDecimal.valueOf(-100),
-        "invalid_sender",
-        "invalid_receiver"
+        INVALID_SENDER,
+        INVALID_RECEIVER
     );
 
     // When validating the DTO

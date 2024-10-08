@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,8 +27,8 @@ class AccountCreateEditDtoValidationTest {
   }
 
   @Test
-  void validAccountCreateEditDto() {
-    AccountCreateEditDto dto = new AccountCreateEditDto("1234 5678 1234 5678", BigDecimal.valueOf(100.00));
+  void shouldBeValidAccountCreateEditDto() {
+    AccountCreateEditDto dto = new AccountCreateEditDto(ACCOUNT_NUMBER, BigDecimal.valueOf(100.00));
 
     Set<ConstraintViolation<AccountCreateEditDto>> violations = validator.validate(dto);
 
@@ -35,7 +36,7 @@ class AccountCreateEditDtoValidationTest {
   }
 
   @Test
-  void accountNumberIsNull_ShouldFailValidation() {
+  void shouldFailValidationWhenAccountNumberIsNull() {
     AccountCreateEditDto dto = new AccountCreateEditDto(null, BigDecimal.valueOf(100.00));
 
     Set<ConstraintViolation<AccountCreateEditDto>> violations = validator.validate(dto);
@@ -49,8 +50,8 @@ class AccountCreateEditDtoValidationTest {
   }
 
   @Test
-  void accountNumberDoesNotMatchPattern_ShouldFailValidation() {
-    AccountCreateEditDto dto = new AccountCreateEditDto("1234567812345678", BigDecimal.valueOf(100.00));
+  void shouldFailValidationWhenAccountNumberDoesNotMatchPattern() {
+    AccountCreateEditDto dto = new AccountCreateEditDto(ACCOUNT_NUMBER, BigDecimal.valueOf(100.00));
 
     Set<ConstraintViolation<AccountCreateEditDto>> violations = validator.validate(dto);
 
@@ -63,8 +64,8 @@ class AccountCreateEditDtoValidationTest {
   }
 
   @Test
-  void balanceIsNull_ShouldFailValidation() {
-    AccountCreateEditDto dto = new AccountCreateEditDto("1234 5678 1234 5678", null);
+  void shouldFailValidationWhenBalanceIsNull() {
+    AccountCreateEditDto dto = new AccountCreateEditDto(ACCOUNT_NUMBER, null);
 
     Set<ConstraintViolation<AccountCreateEditDto>> violations = validator.validate(dto);
 
@@ -77,8 +78,8 @@ class AccountCreateEditDtoValidationTest {
   }
 
   @Test
-  void balanceIsNegative_ShouldFailValidation() {
-    AccountCreateEditDto dto = new AccountCreateEditDto("1234 5678 1234 5678", BigDecimal.valueOf(-100.00));
+  void shouldFailValidationWhenBalanceIsNegative() {
+    AccountCreateEditDto dto = new AccountCreateEditDto(ACCOUNT_NUMBER, BigDecimal.valueOf(-100.00));
 
     Set<ConstraintViolation<AccountCreateEditDto>> violations = validator.validate(dto);
 

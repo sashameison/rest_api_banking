@@ -1,5 +1,6 @@
 package com.narozhnyi.banking_app.repository;
 
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,23 +28,23 @@ class AccountRepositoryTest {
   @BeforeEach
   void setUp() {
     account = new Account();
-    account.setAccountNumber("1234 5678 1234 5678");
+    account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(1000));
     account = accountRepository.save(account);
   }
 
   @Test
   void shouldReturnAccountWhenExists() {
-    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber("1234 5678 1234 5678");
+    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER);
 
     assertTrue(foundAccount.isPresent());
     assertEquals(account.getAccountId(), foundAccount.get().getAccountId());
-    assertEquals("1234 5678 1234 5678", foundAccount.get().getAccountNumber());
+    assertEquals(ACCOUNT_NUMBER, foundAccount.get().getAccountNumber());
   }
 
   @Test
   void shouldReturnEmptyWhenDoesNotExist() {
-    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber("1111 2222 3333 4444");
+    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER);
 
     assertFalse(foundAccount.isPresent());
   }
@@ -59,13 +60,13 @@ class AccountRepositoryTest {
   @Test
   void shouldPersistAccount() {
     Account newAccount = new Account();
-    newAccount.setAccountNumber("9876 5432 1098 7654");
+    newAccount.setAccountNumber(ACCOUNT_NUMBER);
     newAccount.setBalance(BigDecimal.valueOf(500));
 
     Account savedAccount = accountRepository.save(newAccount);
 
     assertNotNull(savedAccount.getAccountId());
-    assertEquals("9876 5432 1098 7654", savedAccount.getAccountNumber());
+    assertEquals(ACCOUNT_NUMBER, savedAccount.getAccountNumber());
     assertEquals(BigDecimal.valueOf(500), savedAccount.getBalance());
   }
 }
