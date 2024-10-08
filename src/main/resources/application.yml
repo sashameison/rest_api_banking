@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: banking-app
+  h2:
+    console.enabled: true
+
+  datasource:
+    hikari:
+      minimumIdle: 1
+      maximum-pool-size: 5
+      idle-timeout: 60000
+    url: jdbc:h2:mem:bank-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE;MODE=PostgreSQL
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+
+  jpa:
+    properties.hibernate:
+    hibernate.ddl-auto: validate
+    open-in-view: false
+
+logging:
+  level:
+    root: INFO
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    page: /swagger-ui.html
+    enabled: true
+
+
+
