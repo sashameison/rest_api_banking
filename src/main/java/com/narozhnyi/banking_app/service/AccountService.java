@@ -6,8 +6,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import com.narozhnyi.banking_app.dto.account.AccountCreateEditDto;
-import com.narozhnyi.banking_app.dto.account.AccountReadDto;
+import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
+import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.mapper.AccountMapper;
@@ -28,7 +28,7 @@ public class AccountService {
   private final AccountMapper accountMapper;
 
   @Transactional
-  public AccountReadDto create(AccountCreateEditDto createEditDto) {
+  public AccountResponse create(AccountCreateDto createEditDto) {
     return Optional.ofNullable(createEditDto)
         .map(accountMapper::toAccount)
         .map(accountRepository::save)
@@ -61,13 +61,13 @@ public class AccountService {
         .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST));
   }
 
-  public AccountReadDto getByAccountNumber(String accountNumber) {
+  public AccountResponse getByAccountNumber(String accountNumber) {
     return accountRepository.findAccountByAccountNumber(accountNumber)
         .map(accountMapper::toReadDto)
         .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
   }
 
-  public Page<AccountReadDto> getAllBy(Pageable pageable) {
+  public Page<AccountResponse> getAllBy(Pageable pageable) {
     return accountRepository.findAllBy(pageable)
         .map(accountMapper::toReadDto);
   }

@@ -1,10 +1,9 @@
 package com.narozhnyi.banking_app.controller;
 
-import com.narozhnyi.banking_app.dto.account.AccountCreateEditDto;
-import com.narozhnyi.banking_app.dto.account.AccountReadDto;
+import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
+import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.service.AccountService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,18 +25,18 @@ public class AccountController {
   private final AccountService accountService;
 
   @GetMapping
-  public Page<AccountReadDto> getAllBy(@PageableDefault Pageable pageable) {
+  public Page<AccountResponse> getAllBy(@PageableDefault Pageable pageable) {
     return accountService.getAllBy(pageable);
   }
 
   @GetMapping("/{account-number}")
-  public AccountReadDto getByAccountNumber(@PathVariable("account-number") String accountNumber) {
+  public AccountResponse getByAccountNumber(@PathVariable("account-number") String accountNumber) {
     return accountService.getByAccountNumber(accountNumber);
   }
 
   @PostMapping
-  public AccountReadDto create(@Valid @RequestBody AccountCreateEditDto accountCreateEditDto) {
-    return accountService.create(accountCreateEditDto);
+  public AccountResponse create(@Valid @RequestBody AccountCreateDto accountCreateDto) {
+    return accountService.create(accountCreateDto);
   }
 
 }

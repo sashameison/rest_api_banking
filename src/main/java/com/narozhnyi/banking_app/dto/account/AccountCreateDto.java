@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountCreateEditDto {
+public class AccountCreateDto {
 
   @NotNull
   @Pattern(regexp = ACCOUNT_NUMBER_REGEX)

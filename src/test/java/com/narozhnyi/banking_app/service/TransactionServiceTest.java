@@ -11,7 +11,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import java.math.BigDecimal;
 
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
-import com.narozhnyi.banking_app.dto.transaction.TransactionalReadDto;
+import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.entity.Transaction;
@@ -53,9 +53,9 @@ public class TransactionServiceTest {
     when(accountService.depositAccountBalance(depositDto)).thenReturn(account);
     when(transactionalMapper.toDepositWithdrawTransaction(depositDto)).thenReturn(depositTransaction);
     when(transactionRepository.saveAndFlush(any(Transaction.class))).thenReturn(depositTransaction);
-    when(transactionalMapper.toReadDto(depositTransaction)).thenReturn(new TransactionalReadDto());
+    when(transactionalMapper.toReadDto(depositTransaction)).thenReturn(new TransactionalResponse());
 
-    TransactionalReadDto result = transactionService.depositFund(depositDto);
+    TransactionalResponse result = transactionService.depositFund(depositDto);
 
     verify(accountService).depositAccountBalance(depositDto);
     verify(transactionRepository).saveAndFlush(depositTransaction);
@@ -81,9 +81,9 @@ public class TransactionServiceTest {
     when(accountService.withdrawAccountBalance(withdrawDto)).thenReturn(account);
     when(transactionalMapper.toDepositWithdrawTransaction(withdrawDto)).thenReturn(withdrawTransaction);
     when(transactionRepository.saveAndFlush(any(Transaction.class))).thenReturn(withdrawTransaction);
-    when(transactionalMapper.toReadDto(withdrawTransaction)).thenReturn(new TransactionalReadDto());
+    when(transactionalMapper.toReadDto(withdrawTransaction)).thenReturn(new TransactionalResponse());
 
-    TransactionalReadDto result = transactionService.withdrawFunds(withdrawDto);
+    TransactionalResponse result = transactionService.withdrawFunds(withdrawDto);
 
     verify(accountService).withdrawAccountBalance(withdrawDto);
     verify(transactionRepository).saveAndFlush(withdrawTransaction);
@@ -114,9 +114,9 @@ public class TransactionServiceTest {
     when(accountService.depositAccountBalance(any(DepositWithdrawFundDto.class))).thenReturn(receiver);
     when(transactionalMapper.toTransaction(transferFundDto)).thenReturn(transaction);
     when(transactionRepository.saveAndFlush(transaction)).thenReturn(transaction);
-    when(transactionalMapper.toReadDto(transaction)).thenReturn(new TransactionalReadDto());
+    when(transactionalMapper.toReadDto(transaction)).thenReturn(new TransactionalResponse());
 
-    TransactionalReadDto result = transactionService.transferFunds(transferFundDto);
+    TransactionalResponse result = transactionService.transferFunds(transferFundDto);
 
     verify(accountService).withdrawAccountBalance(any(DepositWithdrawFundDto.class));
     verify(accountService).depositAccountBalance(any(DepositWithdrawFundDto.class));

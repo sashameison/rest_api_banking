@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import com.narozhnyi.banking_app.dto.account.AccountCreateEditDto;
-import com.narozhnyi.banking_app.dto.account.AccountReadDto;
+import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
+import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.mapper.AccountMapper;
@@ -48,21 +48,21 @@ class AccountServiceTest {
 
   @Test
   void shouldCreateAccountSuccessfully() {
-    AccountCreateEditDto createEditDto = new AccountCreateEditDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000));
+    AccountCreateDto createEditDto = new AccountCreateDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000));
     Account account = new Account();
     account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(1000));
 
-    AccountReadDto accountReadDto = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
+    AccountResponse accountResponse = new AccountResponse(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
 
     when(accountMapper.toAccount(createEditDto)).thenReturn(account);
     when(accountRepository.save(account)).thenReturn(account);
-    when(accountMapper.toReadDto(account)).thenReturn(accountReadDto);
+    when(accountMapper.toReadDto(account)).thenReturn(accountResponse);
 
-    AccountReadDto result = accountService.create(createEditDto);
+    AccountResponse result = accountService.create(createEditDto);
 
     assertNotNull(result);
-    assertEquals(accountReadDto, result);
+    assertEquals(accountResponse, result);
     verify(accountRepository).save(account);
   }
 
@@ -78,15 +78,15 @@ class AccountServiceTest {
     account.setAccountNumber(accountNumber);
     account.setBalance(BigDecimal.valueOf(1000));
 
-    AccountReadDto accountReadDto = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
+    AccountResponse accountResponse = new AccountResponse(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.of(account));
-    when(accountMapper.toReadDto(account)).thenReturn(accountReadDto);
+    when(accountMapper.toReadDto(account)).thenReturn(accountResponse);
 
-    AccountReadDto result = accountService.getByAccountNumber(accountNumber);
+    AccountResponse result = accountService.getByAccountNumber(accountNumber);
 
     assertNotNull(result);
-    assertEquals(accountReadDto, result);
+    assertEquals(accountResponse, result);
     verify(accountRepository).findAccountByAccountNumber(accountNumber);
   }
 
@@ -111,14 +111,14 @@ class AccountServiceTest {
     account2.setBalance(BigDecimal.valueOf(2000));
 
     Page<Account> accountPage = new PageImpl<>(List.of(account1, account2));
-    AccountReadDto accountReadDto1 = new AccountReadDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
-    AccountReadDto accountReadDto2 = new AccountReadDto(RECEIVER_ACCOUNT_NUMBER, BigDecimal.valueOf(2000), now(), now());
+    AccountResponse accountResponse1 = new AccountResponse(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
+    AccountResponse accountResponse2 = new AccountResponse(RECEIVER_ACCOUNT_NUMBER, BigDecimal.valueOf(2000), now(), now());
 
     when(accountRepository.findAllBy(pageable)).thenReturn(accountPage);
-    when(accountMapper.toReadDto(account1)).thenReturn(accountReadDto1);
-    when(accountMapper.toReadDto(account2)).thenReturn(accountReadDto2);
+    when(accountMapper.toReadDto(account1)).thenReturn(accountResponse1);
+    when(accountMapper.toReadDto(account2)).thenReturn(accountResponse2);
 
-    Page<AccountReadDto> result = accountService.getAllBy(pageable);
+    Page<AccountResponse> result = accountService.getAllBy(pageable);
 
     assertNotNull(result);
     assertEquals(2, result.getContent().size());
@@ -128,7 +128,7 @@ class AccountServiceTest {
   @Test
   void shouldThrowVadRequest() {
     // Given
-    AccountCreateEditDto nullInput = null;
+    AccountCreateDto nullInput = null;
 
     // When
     Exception exception = assertThrows(ResponseStatusException.class, () -> accountService.create(nullInput));
@@ -153,10 +153,10 @@ class AccountServiceTest {
 
   @Test
   void shouldReturnAccountByAccountNumber() {
-    var accountCreateEditDto = new AccountCreateEditDto();
+    var accountCreateEditDto = new AccountCreateDto();
     accountCreateEditDto.setAccountNumber(ACCOUNT_NUMBER);
 
-    var expectedAccountReadDto = new AccountReadDto();
+    var expectedAccountReadDto = new AccountResponse();
     expectedAccountReadDto.setAccountNumber(ACCOUNT_NUMBER);
 
     var account = new Account();

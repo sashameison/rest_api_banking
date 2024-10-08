@@ -3,7 +3,7 @@ package com.narozhnyi.banking_app.service;
 import java.util.List;
 
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
-import com.narozhnyi.banking_app.dto.transaction.TransactionalReadDto;
+import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
 import com.narozhnyi.banking_app.mapper.TransactionalMapper;
 import com.narozhnyi.banking_app.repository.AccountRepository;
@@ -24,7 +24,7 @@ public class TransactionService {
   private final AccountRepository accountRepository;
 
   @Transactional
-  public TransactionalReadDto depositFund(DepositWithdrawFundDto depositWithdrawFundDto) {
+  public TransactionalResponse depositFund(DepositWithdrawFundDto depositWithdrawFundDto) {
     var depositTransaction = transactionalMapper.toDepositWithdrawTransaction(depositWithdrawFundDto);
 
     var receiver = accountService.depositAccountBalance(depositWithdrawFundDto);
@@ -35,7 +35,7 @@ public class TransactionService {
   }
 
   @Transactional
-  public TransactionalReadDto withdrawFunds(DepositWithdrawFundDto withdrawFund) {
+  public TransactionalResponse withdrawFunds(DepositWithdrawFundDto withdrawFund) {
     var withdrawTransaction = transactionalMapper.toDepositWithdrawTransaction(withdrawFund);
 
     var receiver = accountService.withdrawAccountBalance(withdrawFund);
@@ -46,7 +46,7 @@ public class TransactionService {
   }
 
   @Transactional(isolation = Isolation.SERIALIZABLE)
-  public TransactionalReadDto transferFunds(TransferFundDto transferFundDto) {
+  public TransactionalResponse transferFunds(TransferFundDto transferFundDto) {
     var transaction = transactionalMapper.toTransaction(transferFundDto);
 
     var sender = accountService.depositAccountBalance(new DepositWithdrawFundDto(
