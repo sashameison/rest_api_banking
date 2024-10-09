@@ -28,3 +28,7 @@ cd banking_app
 ```
 ./gradlew clean test jacocoTestReport  
 ```
+
+## 4. API Documentation
+
+For detailed API documentation, please visit the [Swagger UI](http://localhost:8080/swagger-ui/index.html).
