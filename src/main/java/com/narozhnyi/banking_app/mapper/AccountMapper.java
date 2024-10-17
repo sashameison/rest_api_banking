@@ -13,7 +13,7 @@ public interface AccountMapper {
 
   Account toAccountFromDto(AccountDto accountDto);
 
-  AccountResponse toReadDto(Account account);
+  AccountResponse toAccountResponse(Account account);
   AccountDto toDto(Account account);
 
 

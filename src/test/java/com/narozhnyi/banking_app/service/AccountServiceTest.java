@@ -66,7 +66,7 @@ class AccountServiceTest {
 
     when(accountMapper.toAccount(createEditDto)).thenReturn(account);
     when(accountRepository.save(account)).thenReturn(account);
-    when(accountMapper.toReadDto(account)).thenReturn(accountResponse);
+    when(accountMapper.toAccountResponse(account)).thenReturn(accountResponse);
 
     AccountResponse result = accountService.create(createEditDto);
 
@@ -86,7 +86,7 @@ class AccountServiceTest {
     AccountResponse accountResponse = new AccountResponse(ACCOUNT_NUMBER, BigDecimal.valueOf(1000), now(), now());
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.of(account));
-    when(accountMapper.toReadDto(account)).thenReturn(accountResponse);
+    when(accountMapper.toAccountResponse(account)).thenReturn(accountResponse);
 
     AccountResponse result = accountService.getByAccountNumber(accountNumber);
 
@@ -120,8 +120,8 @@ class AccountServiceTest {
     AccountResponse accountResponse2 = new AccountResponse(RECEIVER_ACCOUNT_NUMBER, BigDecimal.valueOf(2000), now(), now());
 
     when(accountRepository.findAllBy(pageable)).thenReturn(accountPage);
-    when(accountMapper.toReadDto(account1)).thenReturn(accountResponse1);
-    when(accountMapper.toReadDto(account2)).thenReturn(accountResponse2);
+    when(accountMapper.toAccountResponse(account1)).thenReturn(accountResponse1);
+    when(accountMapper.toAccountResponse(account2)).thenReturn(accountResponse2);
 
     Page<AccountResponse> result = accountService.getAllBy(pageable);
 
@@ -154,7 +154,7 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER))
         .thenReturn(Optional.of(account));
-    when(accountMapper.toReadDto(account)).thenReturn(expectedAccountReadDto);
+    when(accountMapper.toAccountResponse(account)).thenReturn(expectedAccountReadDto);
 
     var actualAccountReadDto = accountService.getByAccountNumber(ACCOUNT_NUMBER);
 

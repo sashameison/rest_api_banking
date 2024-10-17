@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class TransactionService {
 
   private final TransactionRepository transactionRepository;
@@ -23,7 +23,6 @@ public class TransactionService {
   private final AccountService accountService;
   private final AccountMapper accountMapper;
 
-  @Transactional
   public TransactionalResponse depositFund(DepositWithdrawFundDto depositWithdrawFundDto) {
     var depositTransaction = transactionalMapper.toDepositWithdrawTransaction(depositWithdrawFundDto);
 
@@ -34,7 +33,6 @@ public class TransactionService {
     return transactionalMapper.toReadDto(depositTransaction);
   }
 
-  @Transactional
   public TransactionalResponse withdrawFunds(DepositWithdrawFundDto withdrawFund) {
     var withdrawTransaction = transactionalMapper.toDepositWithdrawTransaction(withdrawFund);
 
@@ -49,15 +47,19 @@ public class TransactionService {
   public TransactionalResponse transferFunds(TransferFundDto transferFundDto) {
     var transaction = transactionalMapper.toTransaction(transferFundDto);
 
-    var sender = accountService.depositAccountBalance(new DepositWithdrawFundDto(
-        transferFundDto.getTransferAmount(),
-        transferFundDto.getSenderAccountNumber(),
-        TRANSFER));
+    var sender = accountService.depositAccountBalance(
+        DepositWithdrawFundDto.builder()
+            .accountNumber(transferFundDto.getSenderAccountNumber())
+            .transferAmount(transferFundDto.getTransferAmount())
+            .transactionType(TRANSFER)
+            .build());
 
-    var receiver = accountService.withdrawAccountBalance(new DepositWithdrawFundDto(
-        transferFundDto.getTransferAmount(),
-        transferFundDto.getReceiverAccountNumber(),
-        TRANSFER));
+    var receiver = accountService.withdrawAccountBalance(
+        DepositWithdrawFundDto.builder()
+            .accountNumber(transferFundDto.getReceiverAccountNumber())
+            .transferAmount(transferFundDto.getTransferAmount())
+            .transactionType(TRANSFER)
+            .build());
 
     transaction.setSender(accountMapper.toAccountFromDto(sender));
     transaction.setReceiver(accountMapper.toAccountFromDto(receiver));

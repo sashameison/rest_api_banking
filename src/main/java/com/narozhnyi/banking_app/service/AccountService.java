@@ -45,7 +45,7 @@ public class AccountService {
             .transferAmount(createEditDto.getBalance())
         .build());
 
-    return accountMapper.toReadDto(accountToSave);
+    return accountMapper.toAccountResponse(accountToSave);
   }
 
   @Transactional
@@ -76,16 +76,15 @@ public class AccountService {
     return accountMapper.toDto(accountRepository.save(account));
   }
 
-  @Transactional
   public AccountResponse getByAccountNumber(String accountNumber) {
     return accountRepository.findAccountByAccountNumber(accountNumber)
-        .map(accountMapper::toReadDto)
+        .map(accountMapper::toAccountResponse)
         .orElseThrow(() -> new AccountNotFound(format(ACCOUNT_NOT_FOUND, accountNumber)));
   }
 
   public Page<AccountResponse> getAllBy(Pageable pageable) {
     return accountRepository.findAllBy(pageable)
-        .map(accountMapper::toReadDto);
+        .map(accountMapper::toAccountResponse);
   }
 
   private void validateSufficientFunds(Account account, BigDecimal amount) {
