@@ -7,7 +7,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,4 +31,11 @@ public class Account extends AuditingEntity {
   @Column(precision = 19, scale = 2)
   private BigDecimal balance;
 
+  public void depositBalance(BigDecimal amount) {
+    setBalance(getBalance().add(amount));
+  }
+
+  public void withdrawBalance(BigDecimal amount) {
+    setBalance(getBalance().subtract(amount));
+  }
 }

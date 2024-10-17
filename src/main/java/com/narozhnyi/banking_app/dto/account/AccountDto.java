@@ -1,13 +1,12 @@
-package com.narozhnyi.banking_app.dto.transaction;
+package com.narozhnyi.banking_app.dto.account;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.narozhnyi.banking_app.dto.account.AccountResponse;
-import com.narozhnyi.banking_app.entity.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,12 +15,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(NON_NULL)
-public class TransactionalResponse {
+public class AccountDto {
 
-  private BigDecimal transferAmount;
-  private AccountResponse sender;
-  private AccountResponse receiver;
+  private UUID accountId;
+  private String accountNumber;
+  private BigDecimal balance;
   private Instant createdAt;
-  private TransactionType transactionType;
-
+  private Instant modifiedAt;
 }

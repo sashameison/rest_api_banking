@@ -2,6 +2,8 @@ package com.narozhnyi.banking_app.service;
 
 import static java.time.Instant.now;
 
+import static com.narozhnyi.banking_app.entity.TransactionType.DEPOSIT;
+import static com.narozhnyi.banking_app.entity.TransactionType.WITHDRAW;
 import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
 import static com.narozhnyi.banking_app.service.TransactionServiceTest.RECEIVER_ACCOUNT_NUMBER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -18,11 +20,15 @@ import java.util.List;
 import java.util.Optional;
 
 import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
+import com.narozhnyi.banking_app.dto.account.AccountDto;
 import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.entity.Account;
+import com.narozhnyi.banking_app.exception.AccountNotFound;
+import com.narozhnyi.banking_app.exception.NotEnoughMoneyException;
 import com.narozhnyi.banking_app.mapper.AccountMapper;
 import com.narozhnyi.banking_app.repository.AccountRepository;
+import com.narozhnyi.banking_app.repository.TransactionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +37,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
@@ -42,6 +47,9 @@ class AccountServiceTest {
   @Mock
   private AccountMapper accountMapper;
 
+  @Mock
+  private TransactionRepository transactionRepository;
+
   @InjectMocks
   private AccountService accountService;
 
@@ -49,6 +57,7 @@ class AccountServiceTest {
   @Test
   void shouldCreateAccountSuccessfully() {
     AccountCreateDto createEditDto = new AccountCreateDto(ACCOUNT_NUMBER, BigDecimal.valueOf(1000));
+
     Account account = new Account();
     account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(1000));
@@ -64,11 +73,7 @@ class AccountServiceTest {
     assertNotNull(result);
     assertEquals(accountResponse, result);
     verify(accountRepository).save(account);
-  }
-
-  @Test
-  void shouldThrowExceptionWhenCreateEditDtoIsNull() {
-    assertThrows(ResponseStatusException.class, () -> accountService.create(null));
+    verify(transactionRepository).save(any());
   }
 
   @Test
@@ -96,7 +101,7 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.empty());
 
-    assertThrows(ResponseStatusException.class, () -> accountService.getByAccountNumber(accountNumber));
+    assertThrows(AccountNotFound.class, () -> accountService.getByAccountNumber(accountNumber));
   }
 
   @Test
@@ -126,29 +131,14 @@ class AccountServiceTest {
   }
 
   @Test
-  void shouldThrowVadRequest() {
-    // Given
-    AccountCreateDto nullInput = null;
-
-    // When
-    Exception exception = assertThrows(ResponseStatusException.class, () -> accountService.create(nullInput));
-
-    // Then
-    assertThat(exception)
-        .hasMessage("400 BAD_REQUEST");
-  }
-
-  @Test
   void shouldThrowExceptionNotFoundWhenGetByNotExistingAccountNumber() {
     when(accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER))
         .thenReturn(Optional.empty());
 
-    var exception = assertThrows(ResponseStatusException.class, () -> {
-      accountService.getByAccountNumber(ACCOUNT_NUMBER);
-    });
+    var exception = assertThrows(AccountNotFound.class, () -> accountService.getByAccountNumber(ACCOUNT_NUMBER));
 
     assertThat(exception)
-        .hasMessage("404 NOT_FOUND");
+        .hasMessage("Account not found for account number: 1234 5678 1234 5678");
   }
 
   @Test
@@ -173,77 +163,88 @@ class AccountServiceTest {
 
   @Test
   void depositAccountBalance_successful() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
+    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
     account.setBalance(BigDecimal.valueOf(200));
 
-    when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.of(account));
-    when(accountRepository.saveAndFlush(any(Account.class))).thenReturn(account);
+    AccountDto dto = new AccountDto();
+    dto.setAccountNumber("1234 5678 1234 5678");
+    dto.setBalance(BigDecimal.valueOf(300));
 
-    Account updatedAccount = accountService.depositAccountBalance(depositDto);
+    when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenReturn(account);
+    when(accountMapper.toDto(account)).thenReturn(dto);
+
+    AccountDto updatedAccount = accountService.depositAccountBalance(depositDto);
 
     assertNotNull(updatedAccount);
     assertEquals(BigDecimal.valueOf(300), updatedAccount.getBalance());
-    verify(accountRepository).saveAndFlush(account);
+    verify(accountRepository).save(account);
   }
 
   @Test
   void depositAccountBalance_accountNotFound() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
+    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
 
     when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+    AccountNotFound exception = assertThrows(AccountNotFound.class,
         () -> accountService.depositAccountBalance(depositDto));
 
-    assertEquals("404 NOT_FOUND", exception.getMessage());
-    verify(accountRepository, never()).saveAndFlush(any(Account.class));
+    assertEquals("Account not found for account number: 1234 5678 1234 5678", exception.getMessage());
+    verify(accountRepository, never()).save(any(Account.class));
   }
 
   @Test
   void withdrawAccountBalance_successful() {
-    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), "1234 5678 1234 5678");
+    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
+
     Account account = new Account();
     account.setAccountNumber(ACCOUNT_NUMBER);
     account.setBalance(BigDecimal.valueOf(200));
 
-    when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.of(account));
-    when(accountRepository.saveAndFlush(any(Account.class))).thenReturn(account);
+    AccountDto dto = new AccountDto();
+    dto.setAccountNumber(ACCOUNT_NUMBER);
+    dto.setBalance(BigDecimal.valueOf(100));
 
-    Account updatedAccount = accountService.withdrawAccountBalance(withdrawDto);
+    when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenReturn(account);
+    when(accountMapper.toDto(account)).thenReturn(dto);
+
+    AccountDto updatedAccount = accountService.withdrawAccountBalance(withdrawDto);
 
     assertNotNull(updatedAccount);
     assertEquals(BigDecimal.valueOf(100), updatedAccount.getBalance());
-    verify(accountRepository).saveAndFlush(account);
+    verify(accountRepository).save(account);
   }
 
   @Test
   void withdrawAccountBalance_insufficientBalance() {
-    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(300), "1234 5678 1234 5678");
+    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(300), ACCOUNT_NUMBER, WITHDRAW);
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
     account.setBalance(BigDecimal.valueOf(200));
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.of(account));
 
-    ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+    NotEnoughMoneyException exception = assertThrows(NotEnoughMoneyException.class,
         () -> accountService.withdrawAccountBalance(withdrawDto));
 
-    assertEquals("400 BAD_REQUEST", exception.getMessage());
-    verify(accountRepository, never()).saveAndFlush(any(Account.class));
+    assertEquals("Not enough money to transfer.", exception.getMessage());
+    verify(accountRepository, never()).save(any(Account.class));
   }
 
   @Test
   void withdrawAccountBalance_accountNotFound() {
-    var withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER);
+    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    var exception = assertThrows(ResponseStatusException.class,
+    var exception = assertThrows(AccountNotFound.class,
         () -> accountService.withdrawAccountBalance(withdrawDto));
 
-    assertEquals("404 NOT_FOUND", exception.getMessage());
-    verify(accountRepository, never()).saveAndFlush(any(Account.class));
+    assertEquals("Account not found for account number: 1234 5678 1234 5678", exception.getMessage());
+    verify(accountRepository, never()).save(any(Account.class));
   }
 }

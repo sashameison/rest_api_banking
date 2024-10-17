@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS transactions
     transfer_amount NUMERIC(19, 2) ,
     sender_id UUID REFERENCES accounts(account_id) ,
     receiver_id UUID REFERENCES accounts(account_id) NOT NULL,
+    transaction_type VARCHAR(10),
     created_at TIMESTAMP ,
     modified_at TIMESTAMP
 );

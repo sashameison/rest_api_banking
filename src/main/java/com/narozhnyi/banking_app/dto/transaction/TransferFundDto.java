@@ -23,4 +23,5 @@ public class TransferFundDto {
 
   @Pattern(regexp = ACCOUNT_NUMBER_REGEX)
   private String receiverAccountNumber;
+
 }

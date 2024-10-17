@@ -44,7 +44,7 @@ class AccountRepositoryTest {
 
   @Test
   void shouldReturnEmptyWhenDoesNotExist() {
-    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER);
+    Optional<Account> foundAccount = accountRepository.findAccountByAccountNumber("1234");
 
     assertFalse(foundAccount.isPresent());
   }

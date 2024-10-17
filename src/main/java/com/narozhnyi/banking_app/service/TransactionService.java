@@ -1,12 +1,12 @@
 package com.narozhnyi.banking_app.service;
 
-import java.util.List;
+import static com.narozhnyi.banking_app.entity.TransactionType.TRANSFER;
 
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
+import com.narozhnyi.banking_app.mapper.AccountMapper;
 import com.narozhnyi.banking_app.mapper.TransactionalMapper;
-import com.narozhnyi.banking_app.repository.AccountRepository;
 import com.narozhnyi.banking_app.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,16 +21,16 @@ public class TransactionService {
   private final TransactionRepository transactionRepository;
   private final TransactionalMapper transactionalMapper;
   private final AccountService accountService;
-  private final AccountRepository accountRepository;
+  private final AccountMapper accountMapper;
 
   @Transactional
   public TransactionalResponse depositFund(DepositWithdrawFundDto depositWithdrawFundDto) {
     var depositTransaction = transactionalMapper.toDepositWithdrawTransaction(depositWithdrawFundDto);
 
     var receiver = accountService.depositAccountBalance(depositWithdrawFundDto);
-    depositTransaction.setReceiver(receiver);
+    depositTransaction.setReceiver(accountMapper.toAccountFromDto(receiver));
 
-    transactionRepository.saveAndFlush(depositTransaction);
+    transactionRepository.save(depositTransaction);
     return transactionalMapper.toReadDto(depositTransaction);
   }
 
@@ -39,9 +39,9 @@ public class TransactionService {
     var withdrawTransaction = transactionalMapper.toDepositWithdrawTransaction(withdrawFund);
 
     var receiver = accountService.withdrawAccountBalance(withdrawFund);
-    withdrawTransaction.setReceiver(receiver);
+    withdrawTransaction.setReceiver(accountMapper.toAccountFromDto(receiver));
 
-    transactionRepository.saveAndFlush(withdrawTransaction);
+    transactionRepository.save(withdrawTransaction);
     return transactionalMapper.toReadDto(withdrawTransaction);
   }
 
@@ -51,18 +51,18 @@ public class TransactionService {
 
     var sender = accountService.depositAccountBalance(new DepositWithdrawFundDto(
         transferFundDto.getTransferAmount(),
-        transferFundDto.getSenderAccountNumber()));
+        transferFundDto.getSenderAccountNumber(),
+        TRANSFER));
 
     var receiver = accountService.withdrawAccountBalance(new DepositWithdrawFundDto(
         transferFundDto.getTransferAmount(),
-        transferFundDto.getReceiverAccountNumber()));
+        transferFundDto.getReceiverAccountNumber(),
+        TRANSFER));
 
-    accountRepository.saveAllAndFlush(List.of(sender, receiver));
+    transaction.setSender(accountMapper.toAccountFromDto(sender));
+    transaction.setReceiver(accountMapper.toAccountFromDto(receiver));
 
-    transaction.setSender(sender);
-    transaction.setReceiver(receiver);
-
-    transactionRepository.saveAndFlush(transaction);
+    transactionRepository.save(transaction);
 
     return transactionalMapper.toReadDto(transaction);
   }
