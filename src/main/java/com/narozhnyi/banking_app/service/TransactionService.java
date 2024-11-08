@@ -10,7 +10,6 @@ import com.narozhnyi.banking_app.mapper.TransactionalMapper;
 import com.narozhnyi.banking_app.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -24,26 +23,25 @@ public class TransactionService {
   private final AccountMapper accountMapper;
 
   public TransactionalResponse depositFund(DepositWithdrawFundDto depositWithdrawFundDto) {
-    var depositTransaction = transactionalMapper.toDepositWithdrawTransaction(depositWithdrawFundDto);
+    var transaction = transactionalMapper.toDepositWithdrawTransaction(depositWithdrawFundDto);
 
     var receiver = accountService.depositAccountBalance(depositWithdrawFundDto);
-    depositTransaction.setReceiver(accountMapper.toAccountFromDto(receiver));
+    transaction.setReceiver(accountMapper.toAccountFromDto(receiver));
 
-    transactionRepository.save(depositTransaction);
-    return transactionalMapper.toReadDto(depositTransaction);
+    transactionRepository.save(transaction);
+    return transactionalMapper.toReadDto(transaction);
   }
 
   public TransactionalResponse withdrawFunds(DepositWithdrawFundDto withdrawFund) {
-    var withdrawTransaction = transactionalMapper.toDepositWithdrawTransaction(withdrawFund);
+    var transaction = transactionalMapper.toDepositWithdrawTransaction(withdrawFund);
 
     var receiver = accountService.withdrawAccountBalance(withdrawFund);
-    withdrawTransaction.setReceiver(accountMapper.toAccountFromDto(receiver));
+    transaction.setReceiver(accountMapper.toAccountFromDto(receiver));
 
-    transactionRepository.save(withdrawTransaction);
-    return transactionalMapper.toReadDto(withdrawTransaction);
+    transactionRepository.save(transaction);
+    return transactionalMapper.toReadDto(transaction);
   }
 
-  @Transactional(isolation = Isolation.SERIALIZABLE)
   public TransactionalResponse transferFunds(TransferFundDto transferFundDto) {
     var transaction = transactionalMapper.toTransaction(transferFundDto);
 

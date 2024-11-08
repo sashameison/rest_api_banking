@@ -45,13 +45,13 @@ class AccountCreateDtoValidationTest {
     assertEquals(1, violations.size());
 
     ConstraintViolation<AccountCreateDto> violation = violations.iterator().next();
-    assertEquals("must not be null", violation.getMessage());
+    assertEquals("must not be blank", violation.getMessage());
     assertEquals("accountNumber", violation.getPropertyPath().toString());
   }
 
   @Test
   void shouldFailValidationWhenAccountNumberDoesNotMatchPattern() {
-    AccountCreateDto dto = new AccountCreateDto(ACCOUNT_NUMBER, BigDecimal.valueOf(100.00));
+    AccountCreateDto dto = new AccountCreateDto("1234 1234 1234", BigDecimal.valueOf(100.00));
 
     Set<ConstraintViolation<AccountCreateDto>> violations = validator.validate(dto);
 

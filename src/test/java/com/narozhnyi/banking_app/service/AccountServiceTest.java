@@ -24,7 +24,7 @@ import com.narozhnyi.banking_app.dto.account.AccountDto;
 import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.entity.Account;
-import com.narozhnyi.banking_app.exception.AccountNotFound;
+import com.narozhnyi.banking_app.exception.AccountNotFoundException;
 import com.narozhnyi.banking_app.exception.NotEnoughMoneyException;
 import com.narozhnyi.banking_app.mapper.AccountMapper;
 import com.narozhnyi.banking_app.repository.AccountRepository;
@@ -101,7 +101,7 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(accountNumber)).thenReturn(Optional.empty());
 
-    assertThrows(AccountNotFound.class, () -> accountService.getByAccountNumber(accountNumber));
+    assertThrows(AccountNotFoundException.class, () -> accountService.getByAccountNumber(accountNumber));
   }
 
   @Test
@@ -135,7 +135,7 @@ class AccountServiceTest {
     when(accountRepository.findAccountByAccountNumber(ACCOUNT_NUMBER))
         .thenReturn(Optional.empty());
 
-    var exception = assertThrows(AccountNotFound.class, () -> accountService.getByAccountNumber(ACCOUNT_NUMBER));
+    var exception = assertThrows(AccountNotFoundException.class, () -> accountService.getByAccountNumber(ACCOUNT_NUMBER));
 
     assertThat(exception)
         .hasMessage("Account not found for account number: 1234 5678 1234 5678");
@@ -189,7 +189,7 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    AccountNotFound exception = assertThrows(AccountNotFound.class,
+    AccountNotFoundException exception = assertThrows(AccountNotFoundException.class,
         () -> accountService.depositAccountBalance(depositDto));
 
     assertEquals("Account not found for account number: 1234 5678 1234 5678", exception.getMessage());
@@ -241,7 +241,7 @@ class AccountServiceTest {
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.empty());
 
-    var exception = assertThrows(AccountNotFound.class,
+    var exception = assertThrows(AccountNotFoundException.class,
         () -> accountService.withdrawAccountBalance(withdrawDto));
 
     assertEquals("Account not found for account number: 1234 5678 1234 5678", exception.getMessage());

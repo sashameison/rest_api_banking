@@ -14,7 +14,7 @@ import com.narozhnyi.banking_app.dto.account.AccountResponse;
 import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.entity.Transaction;
-import com.narozhnyi.banking_app.exception.AccountNotFound;
+import com.narozhnyi.banking_app.exception.AccountNotFoundException;
 import com.narozhnyi.banking_app.exception.NotEnoughMoneyException;
 import com.narozhnyi.banking_app.mapper.AccountMapper;
 import com.narozhnyi.banking_app.repository.AccountRepository;
@@ -36,16 +36,18 @@ public class AccountService {
 
   @Transactional
   public AccountResponse create(AccountCreateDto createEditDto) {
-    var account = accountMapper.toAccount(createEditDto);
-    var accountToSave = accountRepository.save(account);
+    var accountToSave = accountMapper.toAccount(createEditDto);
+    var accountEntity = accountRepository.save(accountToSave);
 
-    transactionRepository.save(Transaction.builder()
-            .transactionType(DEPOSIT)
-            .receiver(accountToSave)
-            .transferAmount(createEditDto.getBalance())
-        .build());
+    if (createEditDto.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+      transactionRepository.save(Transaction.builder()
+          .transactionType(DEPOSIT)
+          .receiver(accountEntity)
+          .transferAmount(createEditDto.getBalance())
+          .build());
+    }
 
-    return accountMapper.toAccountResponse(accountToSave);
+    return accountMapper.toAccountResponse(accountEntity);
   }
 
   @Transactional
@@ -53,12 +55,12 @@ public class AccountService {
     var accountNumber = depositWithdrawFundDto.getAccountNumber();
     var transferAmount = depositWithdrawFundDto.getTransferAmount();
 
-    var account = accountRepository.findAccountByAccountNumber(accountNumber)
-        .orElseThrow(() -> new AccountNotFound(format(ACCOUNT_NOT_FOUND, accountNumber)));
+    var accountEntity = accountRepository.findAccountByAccountNumber(accountNumber)
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
 
-    account.depositBalance(transferAmount);
+    accountEntity.depositBalance(transferAmount);
 
-    return accountMapper.toDto(accountRepository.save(account));
+    return accountMapper.toDto(accountRepository.save(accountEntity));
   }
 
   @Transactional
@@ -66,20 +68,20 @@ public class AccountService {
     var accountNumber = withdrawFund.getAccountNumber();
     var transferAmount = withdrawFund.getTransferAmount();
 
-    var account = accountRepository.findAccountByAccountNumber(accountNumber)
-        .orElseThrow(() -> new AccountNotFound(format(ACCOUNT_NOT_FOUND, accountNumber)));
+    var accountEntity = accountRepository.findAccountByAccountNumber(accountNumber)
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
 
-    validateSufficientFunds(account, transferAmount);
+    validateSufficientFunds(accountEntity, transferAmount);
 
-    account.withdrawBalance(transferAmount);
+    accountEntity.withdrawBalance(transferAmount);
 
-    return accountMapper.toDto(accountRepository.save(account));
+    return accountMapper.toDto(accountRepository.save(accountEntity));
   }
 
   public AccountResponse getByAccountNumber(String accountNumber) {
     return accountRepository.findAccountByAccountNumber(accountNumber)
         .map(accountMapper::toAccountResponse)
-        .orElseThrow(() -> new AccountNotFound(format(ACCOUNT_NOT_FOUND, accountNumber)));
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
   }
 
   public Page<AccountResponse> getAllBy(Pageable pageable) {
