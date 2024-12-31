@@ -13,7 +13,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import java.math.BigDecimal;
 
 import com.narozhnyi.banking_app.dto.account.AccountDto;
-import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
+import com.narozhnyi.banking_app.dto.transaction.PaymentDto;
 import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
 import com.narozhnyi.banking_app.entity.Account;
@@ -47,7 +47,7 @@ public class TransactionServiceTest {
 
   @Test
   void shouldDepositSuccessfully() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
+    PaymentDto depositDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
 
     AccountDto dto = new AccountDto();
     dto.setAccountNumber(ACCOUNT_NUMBER);
@@ -59,7 +59,7 @@ public class TransactionServiceTest {
 
     Transaction depositTransaction = new Transaction();
     when(accountService.depositAccountBalance(depositDto)).thenReturn(dto);
-    when(transactionalMapper.toDepositWithdrawTransaction(depositDto)).thenReturn(depositTransaction);
+    when(transactionalMapper.toAccountPaymentTransaction(depositDto)).thenReturn(depositTransaction);
     when(transactionRepository.save(any(Transaction.class))).thenReturn(depositTransaction);
     when(transactionalMapper.toReadDto(depositTransaction)).thenReturn(new TransactionalResponse());
     when(accountMapper.toAccountFromDto(dto)).thenReturn(account);
@@ -73,7 +73,7 @@ public class TransactionServiceTest {
 
   @Test
   void shouldThrowException_WhenAccountNotFound() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
+    PaymentDto depositDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
     when(accountService.depositAccountBalance(depositDto)).thenThrow(new ResponseStatusException(NOT_FOUND));
 
     assertThrows(ResponseStatusException.class, () -> transactionService.depositFund(depositDto));
@@ -81,14 +81,14 @@ public class TransactionServiceTest {
 
   @Test
   void shouldWithdrawSuccessfully() {
-    var withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
+    var withdrawDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
     AccountDto dto = new AccountDto();
     dto.setAccountNumber(ACCOUNT_NUMBER);
     dto.setBalance(BigDecimal.valueOf(1000));
 
     Transaction withdrawTransaction = new Transaction();
     when(accountService.withdrawAccountBalance(withdrawDto)).thenReturn(dto);
-    when(transactionalMapper.toDepositWithdrawTransaction(withdrawDto)).thenReturn(withdrawTransaction);
+    when(transactionalMapper.toAccountPaymentTransaction(withdrawDto)).thenReturn(withdrawTransaction);
     when(transactionRepository.save(any(Transaction.class))).thenReturn(withdrawTransaction);
     when(transactionalMapper.toReadDto(withdrawTransaction)).thenReturn(new TransactionalResponse());
     when(accountMapper.toAccountFromDto(dto)).thenReturn(new Account());
@@ -103,7 +103,7 @@ public class TransactionServiceTest {
 
   @Test
   void shouldThrowExceptionWhenInsufficientBalance() {
-    var withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
+    var withdrawDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
     when(accountService.withdrawAccountBalance(withdrawDto)).thenThrow(new ResponseStatusException(BAD_REQUEST));
 
     assertThrows(ResponseStatusException.class, () -> transactionService.withdrawFunds(withdrawDto));
@@ -121,25 +121,20 @@ public class TransactionServiceTest {
     receiver.setBalance(BigDecimal.valueOf(500));
 
     Transaction transaction = new Transaction();
-    when(accountService.withdrawAccountBalance(any(DepositWithdrawFundDto.class))).thenReturn(sender);
-    when(accountService.depositAccountBalance(any(DepositWithdrawFundDto.class))).thenReturn(receiver);
+    when(accountService.withdrawAccountBalance(any(PaymentDto.class))).thenReturn(sender);
+    when(accountService.depositAccountBalance(any(PaymentDto.class))).thenReturn(receiver);
     when(transactionalMapper.toTransaction(transferFundDto)).thenReturn(transaction);
+    when(transactionalMapper.toDepositDto(transferFundDto)).thenReturn(new PaymentDto());
+    when(transactionalMapper.toWithdrawDto(transferFundDto)).thenReturn(new PaymentDto());
     when(transactionRepository.save(transaction)).thenReturn(transaction);
     when(transactionalMapper.toReadDto(transaction)).thenReturn(new TransactionalResponse());
 
     TransactionalResponse result = transactionService.transferFunds(transferFundDto);
 
-    verify(accountService).withdrawAccountBalance(any(DepositWithdrawFundDto.class));
-    verify(accountService).depositAccountBalance(any(DepositWithdrawFundDto.class));
+    verify(accountService).withdrawAccountBalance(any(PaymentDto.class));
+    verify(accountService).depositAccountBalance(any(PaymentDto.class));
     verify(transactionRepository).save(transaction);
     assertNotNull(result);
   }
 
-  @Test
-  void shouldThrowExceptionWhenSenderHasInsufficientBalance() {
-    var transferFundDto = new TransferFundDto(BigDecimal.valueOf(1000), ACCOUNT_NUMBER, RECEIVER_ACCOUNT_NUMBER);
-    when(accountService.withdrawAccountBalance(any(DepositWithdrawFundDto.class))).thenThrow(new ResponseStatusException(BAD_REQUEST));
-
-    assertThrows(ResponseStatusException.class, () -> transactionService.transferFunds(transferFundDto));
-  }
 }

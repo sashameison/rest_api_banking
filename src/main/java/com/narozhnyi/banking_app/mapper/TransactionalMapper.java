@@ -1,6 +1,6 @@
 package com.narozhnyi.banking_app.mapper;
 
-import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
+import com.narozhnyi.banking_app.dto.transaction.PaymentDto;
 import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
 import com.narozhnyi.banking_app.entity.Transaction;
@@ -15,7 +15,16 @@ public interface TransactionalMapper {
   Transaction toTransaction(TransferFundDto transferFundDto);
 
   @Mapping(target = "receiver.accountNumber", source = "accountNumber")
-  Transaction toDepositWithdrawTransaction(DepositWithdrawFundDto depositWithdrawFundDto);
+  Transaction toAccountPaymentTransaction(PaymentDto depositFundDto);
 
   TransactionalResponse toReadDto(Transaction transaction);
+
+  @Mapping(target = "accountNumber", source = "senderAccountNumber")
+  @Mapping(target = "transactionType", constant = "TRANSFER")
+  PaymentDto toDepositDto(TransferFundDto transferFundDto);
+
+  @Mapping(target = "accountNumber", source = "receiverAccountNumber")
+  @Mapping(target = "transactionType", constant = "TRANSFER")
+  PaymentDto toWithdrawDto(TransferFundDto transferFundDto);
+
 }

@@ -1,6 +1,6 @@
 package com.narozhnyi.banking_app.controller;
 
-import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
+import com.narozhnyi.banking_app.dto.transaction.PaymentDto;
 import com.narozhnyi.banking_app.dto.transaction.TransactionalResponse;
 import com.narozhnyi.banking_app.dto.transaction.TransferFundDto;
 import com.narozhnyi.banking_app.service.TransactionService;
@@ -27,12 +27,12 @@ public class TransactionController {
   }
 
   @PostMapping("/deposit")
-  public TransactionalResponse deposit(@NotNull @Valid @RequestBody DepositWithdrawFundDto depositFundDto) {
+  public TransactionalResponse deposit(@NotNull @Valid @RequestBody PaymentDto depositFundDto) {
     return transactionService.depositFund(depositFundDto);
   }
 
   @PostMapping("/withdraw")
-  public TransactionalResponse withdraw(@NotNull @Valid @RequestBody DepositWithdrawFundDto withdrawFundDto) {
+  public TransactionalResponse withdraw(@NotNull @Valid @RequestBody PaymentDto withdrawFundDto) {
     return transactionService.withdrawFunds(withdrawFundDto);
   }
 }

@@ -22,7 +22,7 @@ import java.util.Optional;
 import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
 import com.narozhnyi.banking_app.dto.account.AccountDto;
 import com.narozhnyi.banking_app.dto.account.AccountResponse;
-import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
+import com.narozhnyi.banking_app.dto.transaction.PaymentDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.exception.AccountNotFoundException;
 import com.narozhnyi.banking_app.exception.NotEnoughMoneyException;
@@ -163,7 +163,7 @@ class AccountServiceTest {
 
   @Test
   void depositAccountBalance_successful() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
+    PaymentDto depositDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
     account.setBalance(BigDecimal.valueOf(200));
@@ -185,7 +185,7 @@ class AccountServiceTest {
 
   @Test
   void depositAccountBalance_accountNotFound() {
-    DepositWithdrawFundDto depositDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
+    PaymentDto depositDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, DEPOSIT);
 
     when(accountRepository.findAccountByAccountNumber(depositDto.getAccountNumber())).thenReturn(Optional.empty());
 
@@ -198,7 +198,7 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_successful() {
-    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
+    PaymentDto withdrawDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
 
     Account account = new Account();
     account.setAccountNumber(ACCOUNT_NUMBER);
@@ -221,7 +221,7 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_insufficientBalance() {
-    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(300), ACCOUNT_NUMBER, WITHDRAW);
+    PaymentDto withdrawDto = new PaymentDto(BigDecimal.valueOf(300), ACCOUNT_NUMBER, WITHDRAW);
     Account account = new Account();
     account.setAccountNumber("1234 5678 1234 5678");
     account.setBalance(BigDecimal.valueOf(200));
@@ -237,7 +237,7 @@ class AccountServiceTest {
 
   @Test
   void withdrawAccountBalance_accountNotFound() {
-    DepositWithdrawFundDto withdrawDto = new DepositWithdrawFundDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
+    PaymentDto withdrawDto = new PaymentDto(BigDecimal.valueOf(100), ACCOUNT_NUMBER, WITHDRAW);
 
     when(accountRepository.findAccountByAccountNumber(withdrawDto.getAccountNumber())).thenReturn(Optional.empty());
 

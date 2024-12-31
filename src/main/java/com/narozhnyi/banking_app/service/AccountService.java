@@ -3,7 +3,7 @@ package com.narozhnyi.banking_app.service;
 import static java.lang.String.format;
 
 import static com.narozhnyi.banking_app.entity.TransactionType.DEPOSIT;
-import static com.narozhnyi.banking_app.util.Constants.Errors.ACCOUNT_NOT_FOUND;
+import static com.narozhnyi.banking_app.util.Constants.Errors.ACCOUNT_NOT_FOUND_ERROR;
 import static com.narozhnyi.banking_app.util.Constants.Errors.NOT_ENOUGH_MONEY;
 
 import java.math.BigDecimal;
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
 import com.narozhnyi.banking_app.dto.account.AccountDto;
 import com.narozhnyi.banking_app.dto.account.AccountResponse;
-import com.narozhnyi.banking_app.dto.transaction.DepositWithdrawFundDto;
+import com.narozhnyi.banking_app.dto.transaction.PaymentDto;
 import com.narozhnyi.banking_app.entity.Account;
 import com.narozhnyi.banking_app.entity.Transaction;
 import com.narozhnyi.banking_app.exception.AccountNotFoundException;
@@ -51,12 +51,12 @@ public class AccountService {
   }
 
   @Transactional
-  public AccountDto depositAccountBalance(DepositWithdrawFundDto depositWithdrawFundDto) {
-    var accountNumber = depositWithdrawFundDto.getAccountNumber();
-    var transferAmount = depositWithdrawFundDto.getTransferAmount();
+  public AccountDto depositAccountBalance(PaymentDto depositFundDto) {
+    var accountNumber = depositFundDto.getAccountNumber();
+    var transferAmount = depositFundDto.getTransferAmount();
 
     var accountEntity = accountRepository.findAccountByAccountNumber(accountNumber)
-        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND_ERROR, accountNumber)));
 
     accountEntity.depositBalance(transferAmount);
 
@@ -64,12 +64,12 @@ public class AccountService {
   }
 
   @Transactional
-  public AccountDto withdrawAccountBalance(DepositWithdrawFundDto withdrawFund) {
+  public AccountDto withdrawAccountBalance(PaymentDto withdrawFund) {
     var accountNumber = withdrawFund.getAccountNumber();
     var transferAmount = withdrawFund.getTransferAmount();
 
     var accountEntity = accountRepository.findAccountByAccountNumber(accountNumber)
-        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND_ERROR, accountNumber)));
 
     validateSufficientFunds(accountEntity, transferAmount);
 
@@ -81,7 +81,7 @@ public class AccountService {
   public AccountResponse getByAccountNumber(String accountNumber) {
     return accountRepository.findAccountByAccountNumber(accountNumber)
         .map(accountMapper::toAccountResponse)
-        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND, accountNumber)));
+        .orElseThrow(() -> new AccountNotFoundException(format(ACCOUNT_NOT_FOUND_ERROR, accountNumber)));
   }
 
   public Page<AccountResponse> getAllBy(Pageable pageable) {

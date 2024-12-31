@@ -26,6 +26,7 @@ public class Account extends AuditingEntity {
   @Column(name = "account_id")
   private UUID accountId;
 
+  @Column(unique = true)
   private String accountNumber;
 
   @Column(precision = 19, scale = 2)
