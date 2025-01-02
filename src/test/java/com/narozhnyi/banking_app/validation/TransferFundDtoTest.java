@@ -2,6 +2,8 @@ package com.narozhnyi.banking_app.validation;
 
 import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
 import static com.narozhnyi.banking_app.service.TransactionServiceTest.RECEIVER_ACCOUNT_NUMBER;
+import static com.narozhnyi.banking_app.util.Constants.Errors.ACCOUNT_NUMBER_INVALID_ERROR;
+import static com.narozhnyi.banking_app.util.Constants.Errors.AMOUNT_INVALID_ERROR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,7 +56,7 @@ class TransferFundDtoTest {
 
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
-    assertEquals("must be greater than 0", violation.getMessage());
+    assertEquals(AMOUNT_INVALID_ERROR, violation.getMessage());
   }
 
   @Test
@@ -69,7 +71,7 @@ class TransferFundDtoTest {
 
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
-    assertEquals("must match \"^\\d{4} \\d{4} \\d{4} \\d{4}$\"", violation.getMessage());
+    assertEquals(ACCOUNT_NUMBER_INVALID_ERROR, violation.getMessage());
   }
 
   @Test
@@ -84,7 +86,7 @@ class TransferFundDtoTest {
 
     assertEquals(1, violations.size());
     ConstraintViolation<TransferFundDto> violation = violations.iterator().next();
-    assertEquals("must match \"^\\d{4} \\d{4} \\d{4} \\d{4}$\"", violation.getMessage());
+    assertEquals(ACCOUNT_NUMBER_INVALID_ERROR, violation.getMessage());
   }
 
   @Test

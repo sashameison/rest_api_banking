@@ -1,5 +1,15 @@
 package com.narozhnyi.banking_app.validation;
 
+import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
+import static com.narozhnyi.banking_app.util.Constants.Errors.ACCOUNT_NUMBER_INVALID_ERROR;
+import static com.narozhnyi.banking_app.util.Constants.Errors.AMOUNT_INVALID_ERROR;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.Set;
+
 import com.narozhnyi.banking_app.dto.account.AccountCreateDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -7,14 +17,6 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.util.Set;
-
-import static com.narozhnyi.banking_app.service.TransactionServiceTest.ACCOUNT_NUMBER;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AccountCreateDtoValidationTest {
 
@@ -59,7 +61,7 @@ class AccountCreateDtoValidationTest {
     assertEquals(1, violations.size());
 
     ConstraintViolation<AccountCreateDto> violation = violations.iterator().next();
-    assertEquals("must match \"^\\d{4} \\d{4} \\d{4} \\d{4}$\"", violation.getMessage());
+    assertEquals(ACCOUNT_NUMBER_INVALID_ERROR, violation.getMessage());
     assertEquals("accountNumber", violation.getPropertyPath().toString());
   }
 
@@ -87,7 +89,7 @@ class AccountCreateDtoValidationTest {
     assertEquals(1, violations.size());
 
     ConstraintViolation<AccountCreateDto> violation = violations.iterator().next();
-    assertEquals("must be greater than or equal to 0", violation.getMessage());
+    assertEquals(AMOUNT_INVALID_ERROR, violation.getMessage());
     assertEquals("balance", violation.getPropertyPath().toString());
   }
 }
