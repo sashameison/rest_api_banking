@@ -1,5 +1,7 @@
 package com.narozhnyi.banking_app.dto.account;
 
+import static com.narozhnyi.banking_app.util.Constants.Errors.ACCOUNT_NUMBER_INVALID_ERROR;
+import static com.narozhnyi.banking_app.util.Constants.Errors.AMOUNT_INVALID_ERROR;
 import static com.narozhnyi.banking_app.util.Constants.Regex.ACCOUNT_NUMBER_REGEX;
 
 import java.math.BigDecimal;
@@ -18,10 +20,10 @@ import lombok.NoArgsConstructor;
 public class AccountCreateDto {
 
   @NotBlank
-  @Pattern(regexp = ACCOUNT_NUMBER_REGEX)
+  @Pattern(regexp = ACCOUNT_NUMBER_REGEX, message = ACCOUNT_NUMBER_INVALID_ERROR)
   private String accountNumber;
 
   @NotNull
-  @Min(value = 0L)
+  @Min(value = 0L, message = AMOUNT_INVALID_ERROR)
   private BigDecimal balance;
 }
